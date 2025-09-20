@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client'
 import { initialBooks } from '@/data/initial-books'
 import { Book } from '@/types/book'
@@ -31,3 +32,50 @@ export function useBooks() {
 
   return { books, addBook, editBook, getBook, searchBooks }
 }
+=======
+//Hook para manipular lista de livros (CRUD, filtros, etc)
+// src/hooks/useBooks.ts
+import { useState, useEffect } from 'react';
+import {
+  Book,
+  getBooks,
+  saveBooks,
+} from '@/lib/storage';
+
+// Custom hook para gerenciar a lista de livros
+export function useBooks() {
+  const [books, setBooks] = useState<Book[]>([]);
+
+  // Carrega os livros do localStorage na primeira renderização
+  useEffect(() => {
+    const storedBooks = getBooks();
+    setBooks(storedBooks);
+  }, []);
+
+  // Adiciona um novo livro
+  const addBook = (book: Omit<Book, 'id'>) => {
+    const newBook = { ...book, id: Date.now().toString() };
+    const updatedBooks = [...books, newBook];
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks); // Persiste os dados no localStorage
+  };
+
+  // Atualiza um livro existente
+  const updateBook = (updatedBook: Book) => {
+    const updatedBooks = books.map((book) =>
+      book.id === updatedBook.id ? updatedBook : book
+    );
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks); // Persiste os dados no localStorage
+  };
+
+  // Exclui um livro
+  const deleteBook = (id: string) => {
+    const updatedBooks = books.filter((book) => book.id !== id);
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks); // Persiste os dados no localStorage
+  };
+
+  return { books, addBook, updateBook, deleteBook };
+}
+>>>>>>> 2309a29 (feat: implementa lógica de storage, hook de livros e BookCard)

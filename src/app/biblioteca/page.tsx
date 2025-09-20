@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // src/app/biblioteca/page.tsx
 'use client'
 
@@ -105,3 +106,41 @@ export default function LibraryPage() {
     </div>
   )
 }
+=======
+// src/app/library/page.tsx
+'use client';
+
+import Link from 'next/link';
+import { useBooks } from '@/hooks/useBooks';
+import BookCard from '@/components/book/book-card';
+export default function LibraryPage() {
+  const { books, deleteBook } = useBooks(); // Extrai a função deleteBook
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+      <div className="w-full max-w-4xl p-6 bg-gray-800 rounded-lg shadow-lg">
+        <h1 className="text-3xl font-bold mb-6 text-center">Minha Biblioteca</h1>
+
+        <nav className="flex justify-center gap-4 mb-8">
+            <Link href="/" className="p-4 bg-indigo-600 hover:bg-indigo-700 transition rounded-lg font-bold">
+                Dashboard
+            </Link>
+            <Link href="/add-book" className="p-4 bg-emerald-600 hover:bg-emerald-700 transition rounded-lg font-bold">
+                Adicionar Livro
+            </Link>
+        </nav>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {books.map(book => (
+            <BookCard
+              key={book.id}
+              book={book}
+              onDelete={deleteBook} // Passa a função para o BookCard
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+>>>>>>> 2309a29 (feat: implementa lógica de storage, hook de livros e BookCard)
