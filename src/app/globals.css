@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Paleta aconchegante para o projeto da equipe */
+:root {
+  --color-bg: #fdf6f0;         /* fundo creme claro */
+  --color-text: #3b2f2f;       /* marrom escuro para textos */
+  --color-accent: #a9746e;     /* marrom café */
+  --color-secondary: #d4a373;  /* bege acobreado */
+  --color-tertiary: #c19a6b;   /* marrom suave */
+  --color-muted: #e8d7c0;      /* creme para elementos secundários */
+  --color-bg: #fef6e4;
+  --color-text: #4b3f2f;
+  --color-banner: #e6d8ad;
+  --color-banner-text: #3c2f2f;
+  --color-card-bg: #f5e0c3;
+  --color-card-lendo: #d4b483;
+  --color-card-lidos: #b79f82;
+  --color-card-quero: #d6a77a;
+  --color-primary: #a67c52;
+  --color-accent: #c9996b;
+}
+
+/* Reset / base */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent);
+  border-radius: 4px;
+}
+
+/* Box sizing */
+* {
+  box-sizing: border-box;
+}
+
+/* Headings padrão */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Parágrafos padrão */
+p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Botões padrão */
+button {
+  cursor: pointer;
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 6px;
+  padding: .5rem 1rem;
+  transition: background .2s ease-in-out;
+}
+
+button:hover {
+  background: var(--color-secondary);
+}
+
+/* Inputs padrão */
+input, select, textarea {
+  font-family: inherit;
+  border: 1px solid #d1cfc1;
+  border-radius: 6px;
+  padding: .5rem;
+  outline: none;
+  transition: border-color .2s ease-in-out;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-accent);
+}
+
+

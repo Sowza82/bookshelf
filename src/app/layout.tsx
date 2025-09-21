@@ -1,18 +1,21 @@
-// src/app/layout.tsx
 import { ReactNode } from 'react'
-import '../styles/globals.css'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
+import './globals.css'
 
-export const metadata = {
-  title: 'BookShelf',
-  description: 'Biblioteca pessoal da equipe MisturaDev',
+interface RootLayoutProps {
+  children: ReactNode
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="pt-BR">
-      <body className="bg-gray-50 text-gray-900 min-h-screen">
-        {/* Header global pode ser importado aqui futuramente */}
-        {children}
+      <body className="bg-[var(--color-bg)] text-[var(--color-text)] min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 container mx-auto px-4 py-8">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   )
