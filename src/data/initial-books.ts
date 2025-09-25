@@ -1,55 +1,85 @@
-// src/data/initial-books.ts
-import { Book } from '@/types/book'
+// src/data/initialBooks.ts
+import { Book } from '@/types/book';
 
-const initialBooks: Book[] = [
+export const initialBooks: Book[] = [
   {
-    id: '1',
-    title: '1984',
-    author: 'George Orwell',
-    year: 1949,
-    cover: 'https://covers.openlibrary.org/b/id/7222246-L.jpg',
-    status: 'lido'
+    id: "1",
+    title: "O Senhor dos Anéis",
+    author: "J.R.R. Tolkien",
+    cover: "/covers/lotr.png",
+    publicationYear: 1954,
+    genre: "Fantasia",
+    read: true,
+    rating: 5,
   },
   {
-    id: '2',
-    title: 'O Hobbit',
-    author: 'J.R.R. Tolkien',
-    year: 1937,
-    cover: 'https://covers.openlibrary.org/b/id/6979861-L.jpg',
-    status: 'quero-ler'
+    id: "2",
+    title: "A Metamorfose",
+    author: "Franz Kafka",
+    cover: "/covers/metamorfose.png",
+    publicationYear: 1915,
+    genre: "Ficção Absurda",
+    read: false,
+    rating: 4,
   },
   {
-    id: '3',
-    title: 'Dom Casmurro',
-    author: 'Machado de Assis',
-    year: 1899,
-    cover: 'https://covers.openlibrary.org/b/id/8231851-L.jpg',
-    status: 'lendo'
+    id: "3",
+    title: "Dom Casmurro",
+    author: "Machado de Assis",
+    cover: "/covers/dom-casmurro.png",
+    publicationYear: 1899,
+    genre: "Romance Clássico",
+    read: true,
+    rating: 4,
   },
   {
-    id: '4',
-    title: 'O Pequeno Príncipe',
-    author: 'Antoine de Saint-Exupéry',
-    year: 1943,
-    cover: 'https://covers.openlibrary.org/b/id/8225266-L.jpg',
-    status: 'lido'
+    id: "4",
+    title: "A Culpa é das Estrelas",
+    author: "John Green",
+    cover: "/covers/culpa-das-estrelas.png",
+    publicationYear: 2012,
+    genre: "Young Adult",
+    read: false,
+    rating: 3,
   },
   {
-    id: '5',
-    title: 'Harry Potter e a Pedra Filosofal',
-    author: 'J.K. Rowling',
-    year: 1997,
-    cover: 'https://covers.openlibrary.org/b/id/7984916-L.jpg',
-    status: 'quero-ler'
+    id: "5",
+    title: "Sapiens: Uma Breve História da Humanidade",
+    author: "Yuval Noah Harari",
+    cover: "/covers/sapiens.png",
+    publicationYear: 2011,
+    genre: "Não-Ficção",
+    read: true,
+    rating: 5,
   },
   {
-    id: '6',
-    title: 'O Alquimista',
-    author: 'Paulo Coelho',
-    year: 1988,
-    cover: 'https://covers.openlibrary.org/b/id/8271993-L.jpg',
-    status: 'lendo'
-  }
-]
-
-export default initialBooks
+    id: "6",
+    title: "Clean Code",
+    author: "Robert C. Martin",
+    cover: "/covers/clean-code.png",
+    publicationYear: 2008,
+    genre: "Tecnologia",
+    read: true,
+    rating: 5,
+  },
+  {
+    id: "7",
+    title: "O Gene: Uma História Íntima",
+    author: "Siddhartha Mukherjee",
+    cover: "/covers/o-gene.png",
+    publicationYear: 2016,
+    genre: "Ciência",
+    read: true,
+    rating: 5,
+  },
+  {
+    id: "8",
+    title: "Inteligência Artificial: Guia Prático",
+    author: "Pedro Domingos",
+    cover: "/covers/ia-guia-pratico.png",
+    publicationYear: 2020,
+    genre: "Tecnologia",
+    read: false,
+    rating: 4,
+  },
+];

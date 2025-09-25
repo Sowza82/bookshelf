@@ -1,14 +1,13 @@
 'use client'
 
 import BookForm from '@/components/book/book-form'
-import { useBook } from '@/hooks/useBooks'
 
 interface EditBookPageProps {
   params: { id: string }
 }
 
 export default function EditBookPage({ params }: EditBookPageProps) {
-  const { books } = useBook()
+  const { books } = useBooks()
   const bookToEdit = books.find(b => b.id === params.id)
 
   if (!bookToEdit)

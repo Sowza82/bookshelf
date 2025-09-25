@@ -1,8 +1,11 @@
+// src/types/book.ts
 export interface Book {
-  id?: string;
+  id: string;
   title: string;
   author: string;
-  year: number;
-  cover?: string;
-  status: "lendo" | "lido" | "quero-ler";
+  coverImageUrl?: string;
+  publicationYear: number;
+  genre: string;
+  read: boolean;
+  rating: number;
 }

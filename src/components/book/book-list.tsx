@@ -1,45 +1,38 @@
+// src/components/book/book-list.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
-import BookCard from './book-card'
-import BookSearch from './book-search'
+import { Button } from '@/components/ui/button'
 import { useBook } from '@/hooks/useBooks'
-import { Book } from '@/types/book'
+import Link from 'next/link'
+import BookCard from './book-card'
 
-interface BookListProps {
-  className?: string
-}
+export default function BookList() {
+  const { books } = useBook()
 
-export default function BookList({ className }: BookListProps) {
-  const { books, searchBooks } = useBook()
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>(books)
-
-  useEffect(() => {
-    setFilteredBooks(books)
-  }, [books])
-
-  const handleSearch = (query: string) => setFilteredBooks(searchBooks(query))
-
-  if (books.length === 0)
+  if (books.length === 0) {
     return (
-      <p className="text-center text-gray-500 dark:text-gray-400 mt-6 text-lg">
-        Nenhum livro cadastrado.
-      </p>
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-semibold mb-4 text-[var(--color-text)]">
+          Sua biblioteca está vazia!
+        </h2>
+        <p className="mb-6 text-muted-foreground">
+          Comece adicionando o seu primeiro livro.
+        </p>
+        <Link href="/livro/novo" passHref>
+          <Button className="bg-primary hover:bg-primary/90 transition">
+            Adicionar Novo Livro
+          </Button>
+        </Link>
+      </div>
     )
+  }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      {/* Barra de pesquisa */}
-      <BookSearch onSearch={handleSearch} />
-
-      {/* Grid de livros */}
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6 ${className}`}
-      >
-        {filteredBooks.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      {/* Mapeia a lista de livros para renderizar os cards */}
+      {books.map(book => (
+        <BookCard key={book.id} book={book} />
+      ))}
     </div>
   )
 }
