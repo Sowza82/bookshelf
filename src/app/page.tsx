@@ -2,25 +2,28 @@
 'use client'
 
 import StatsCards from '@/components/dashboard/stats-cards'
-// O Testimonial não é mais necessário, mas o mantemos na importação por segurança,
-// caso você o utilize em outro lugar, mas a linha não será gerada abaixo.
+// O Testimonial não é mais necessário, mas mantemos por segurança.
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useBooks } from '@/hooks/useBooks'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
+import ThemeToggle from '@/components/ui/theme-toggle'
 
 export default function Dashboard() {
   const { books } = useBooks()
 
   return (
     <div className="p-6 md:p-10 space-y-8">
-      {/* 1. Título e Botões de Ação (Responsivo Corrigido) */}
-      <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center space-y-4 md:space-y-0">
-        <h1 className="text-3xl font-bold text-[var(--color-text)]">
+      {/* 1. Título e Botões */}
+      <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4">
+        {/* Título com cor forte (muda no dark) */}
+        <h1 className="text-3xl font-bold text-[var(--color-strong)]">
           Dashboard Bookshelf
         </h1>
-        <div className="flex space-x-3">
+
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link href="/biblioteca">
             <Button variant="outline">Ver Biblioteca</Button>
           </Link>
@@ -32,35 +35,39 @@ export default function Dashboard() {
 
       {/* 2. Estatísticas */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-[var(--color-text)]">
+        {/* Subtítulo com cor forte (muda no dark) */}
+        <h2 className="text-2xl font-semibold text-[var(--color-strong)]">
           Estatísticas
         </h2>
+
         <StatsCards books={books} />
       </section>
 
-      {/* 3. Status de Atualização (Abaixo das Estatísticas e Full-Width) */}
-      <Card className="p-3 shadow-sm">
-        <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>Atualizado em:</span>
-          <span className="font-medium">
+      {/* 3. Status de Atualização */}
+      <Card className="p-3 shadow-sm bg-[var(--color-card)] border border-[var(--color-border)]">
+        <div className="flex justify-between items-center text-sm">
+          {/* Rótulo permanece muted */}
+          <span className="text-[var(--color-muted)]">Atualizado em:</span>
+
+          {/* Data com cor forte (muda no dark) */}
+          <span className="font-medium text-[var(--color-strong)]">
             {new Date().toLocaleDateString('pt-BR')}
           </span>
         </div>
       </Card>
 
-      {/* 4. A seção Depoimentos foi REMOVIDA. */}
-
-      {/* 5. Caixa de Boas-Vindas (FINAL DA PÁGINA, antes do Footer) */}
-      <Card className="border-l-4 border-primary bg-primary/5 p-6 shadow-sm">
+      {/* 4. Caixa de Boas-Vindas */}
+      <Card className="border-l-4 border-primary !bg-[var(--color-tertiary)] border border-[var(--color-border)] p-6 shadow-sm">
         <CardHeader className="p-0 pb-2">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <BookOpen className="h-6 w-6 text-primary" />
-            <CardTitle className="text-2xl font-bold text-primary">
+            <CardTitle className="text-2xl font-bold text-[var(--color-text)]">
               Bem-vindo(a) ao BookShelf
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="p-0 text-gray-700">
+
+        <CardContent className="p-0 text-[var(--color-text)]">
           Use o menu acima para navegar. Você pode começar adicionando um livro
           ou explorando sua biblioteca atual.
         </CardContent>
@@ -68,3 +75,4 @@ export default function Dashboard() {
     </div>
   )
 }
+

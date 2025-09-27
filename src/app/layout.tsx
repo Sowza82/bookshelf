@@ -1,18 +1,26 @@
-import Footer from '@/components/layout/footer'
-import { ReactNode } from 'react'
-import './globals.css'
+// src/app/layout.tsx
+import Footer from "@/components/layout/footer";
+import { ReactNode } from "react";
+import "./globals.css";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 
 interface RootLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="pt-BR">
-      <body className="bg-[var(--color-bg)] text-[var(--color-text)] min-h-screen flex flex-col">
-        <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
-        <Footer />
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-background text-foreground">
+        <ThemeProvider>
+          <main className="flex-1 container mx-auto px-4 py-8">{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
+
+
+
+

@@ -1,38 +1,32 @@
 @import "tailwindcss";
-
 @plugin "tailwindcss-animate";
 
+/* (ok manter) variante dark do tailwind-shadcn */
 @custom-variant dark (&:is(.dark *));
 
-/* Paleta integrada com Stone do Shadcn UI */
+/* =========================
+   TOKENS SHADCN / BASE
+   ========================= */
+
+/* Paleta original (mantida) + tokens do shadcn/oklch */
 :root {
-  --color-bg: #fef6e4;
-  /* stone-50 aproximado */
+  /* sua paleta */
+  --color-bg: #fef6e4;             /* fundo CLARO */
   --color-text: #4b3f2f;
-  /* stone-900 */
   --color-accent: #c9996b;
-  /* stone-500 */
   --color-secondary: #d4a373;
-  /* stone-300 */
   --color-tertiary: #c19a6b;
-  /* stone-200 */
   --color-muted: #e8d7c0;
-  /* stone-100 */
   --color-banner: #e6d8ad;
-  /* stone-200 */
   --color-banner-text: #3c2f2f;
-  /* stone-900 */
   --color-card-bg: #f5e0c3;
-  /* stone-100 */
   --color-card-lendo: #d4b483;
-  /* stone-200 */
   --color-card-lidos: #b79f82;
-  /* stone-300 */
   --color-card-quero: #d6a77a;
-  /* stone-400 */
   --color-primary: #a67c52;
-  /* stone-600 */
   --radius: 0.625rem;
+ 
+  /* tokens shadcn */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -66,54 +60,24 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Reset / base */
+/* Reset / base (SEM background aqui; deixo só tipografia) */
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--color-bg);
-  color: var(--color-text);
   margin: 0;
   padding: 0;
 }
 
-/* Links */
-a {
-  text-decoration: none;
-  color: inherit;
-}
+a { text-decoration: none; color: inherit; }
 
-/* Scrollbar customizada */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
+::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb {
   background-color: var(--color-accent);
   border-radius: 4px;
 }
+* { box-sizing: border-box; }
+h1,h2,h3,h4,h5,h6 { margin: 0; font-weight: 600; }
+p { margin: 0; line-height: 1.5; }
 
-/* Box sizing */
-* {
-  box-sizing: border-box;
-}
-
-/* Headings padrão */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-  font-weight: 600;
-}
-
-/* Parágrafos padrão */
-p {
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* Botões padrão */
 button {
   cursor: pointer;
   border: none;
@@ -123,15 +87,9 @@ button {
   padding: .5rem 1rem;
   transition: background .2s ease-in-out;
 }
+button:hover { background: var(--color-secondary); }
 
-button:hover {
-  background: var(--color-secondary);
-}
-
-/* Inputs padrão */
-input,
-select,
-textarea {
+input, select, textarea {
   font-family: inherit;
   border: 1px solid var(--color-muted);
   border-radius: 6px;
@@ -139,13 +97,9 @@ textarea {
   outline: none;
   transition: border-color .2s ease-in-out;
 }
+input:focus, select:focus, textarea:focus { border-color: var(--color-accent); }
 
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--color-accent);
-}
-
+/* Tokens inline do shadcn (ok manter) */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -184,6 +138,7 @@ textarea:focus {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Tokens dark do shadcn (mantidos) */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -218,11 +173,56 @@ textarea:focus {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ====== Tailwind base: sem bg aqui ====== */
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  * { @apply border-border outline-ring/50; }
+  body { @apply text-foreground; } /* sem bg-background */
+}
+
+/* === Override final para cores Light/Dark === */
+@layer base {
+  :root {
+    --color-bg:        #f7f2e8;   /* fundo claro */
+    --color-text:      #111111;   /* texto escuro */
+    --color-card:      #ffffff;   /* card claro */
+    --color-muted:     #6b7280;   /* texto secundário claro */
+    --color-border:    #e5e7eb;   /* borda clara */
+    --color-tertiary:  #efe9dc;   /* superfícies suaves claras */
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .dark {
+    --color-bg:        #0b0b0b;   /* fundo escuro */
+    --color-text:      #f3f4f6;   /* texto claro */
+    --color-card:      #121212;   /* card escuro */
+    --color-muted:     #9ca3af;   /* texto secundário escuro */
+    --color-border:    #2a2a2a;   /* borda escura */
+    --color-tertiary:  #121212;   /* superfícies suaves escuras */
   }
+
+  html, body {
+    background: var(--color-bg);  /* sem !important */
+    color: var(--color-text);
+  }
+}
+/* === FORÇA FUNDO GLOBAL (vence tudo) === */
+html, body, #__next, main {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text);
+}
+
+/* Quando estiver em modo escuro */
+html.dark,
+html.dark body,
+html.dark #__next,
+html.dark main {
+  background-color: #0b0b0b !important;  /* fundo quase preto */
+  color: #f3f4f6 !important;              /* texto claro */
+}
+
+:root {
+  --color-strong: #111111; /* cor padrão (modo claro) */
+}
+
+.dark {
+  --color-strong: #d4a373; /* verde do "Atualizado em" */
 }
