@@ -3,117 +3,77 @@
 import { Button } from '@/components/ui/button'
 import { Book } from '@/types/book'
 import { Loader2, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import BookCard from './book-card'
 
-// MOCK: Assumindo que você tem o sistema de Toast do Shadcn/UI configurado
-// Na vida real, você importaria 'useToast' de '@/components/ui/use-toast'
+// MOCK: Toast simples (substitua pelo useToast real do Shadcn/UI)
 const useToast = () => ({
   toast: ({ title, description }: { title: string; description: string }) => {
-    console.log(`[TOAST SUCESSO] ${title}: ${description}`)
-    // Substitua este console.log pela chamada real do seu toast
+    console.log(`[TOAST] ${title}: ${description}`)
   },
 })
 
+// 🔑 Props corretas incluindo os handlers
 interface BookListProps {
   books: Book[]
+  onEdit: (bookId: string) => void
+  onView: (bookId: string) => void
 }
 
-export default function BookList({ books }: BookListProps) {
-  const router = useRouter()
+export default function BookList({ books, onEdit, onView }: BookListProps) {
   const { toast } = useToast()
 
-  // --- ESTADOS PARA O MODAL ---
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // 1. Handler para Visualizar os Detalhes do Livro
-  const handleView = (bookId: string) => {
-    router.push(`/livro/${bookId}`)
-  }
-
-  // 2. Handler para Editar o Livro
-  const handleEdit = (bookId: string) => {
-    router.push(`/livro/editar/${bookId}`)
-  }
-
-  // 3. Handler para ABRIR O MODAL
+  // Handler para abrir modal de exclusão
   const handleDelete = (bookId: string) => {
     const book = books.find(b => b.id === bookId)
-    if (book) {
-      setBookToDelete(book)
-    }
+    if (book) setBookToDelete(book)
   }
 
-  // 4. LÓGICA REAL DE DELEÇÃO (Chamada quando o utilizador confirma no modal)
+  // Confirma exclusão
   const confirmDelete = async () => {
     if (!bookToDelete) return
-
     setIsDeleting(true)
-    const bookId = bookToDelete.id
 
     try {
-      // ⚠️ SIMULAÇÃO DA CHAMADA DE API (Substitua por seu fetch real)
+      // Aqui você faria a chamada real da API
       await new Promise(resolve => setTimeout(resolve, 1500))
-      // const response = await fetch(`/api/books/${bookId}`, { method: 'DELETE' });
-      // if (!response.ok) throw new Error('Falha na exclusão do livro.');
 
-      // 5. Feedback de Sucesso (TOAST)
       toast({
-        title: 'Sucesso na Exclusão!',
-        description: `O livro "${bookToDelete.title}" foi removido com sucesso.`,
+        title: 'Livro removido',
+        description: `O livro "${bookToDelete.title}" foi deletado com sucesso.`,
       })
-
-      // 6. Atualiza a lista de livros após a exclusão (simulado)
-      // router.refresh(); // No Next.js 13/14, você usaria isso para revalidar dados
-      console.log(`Livro ID ${bookId} deletado com sucesso (simulado).`)
-    } catch (error) {
-      console.error('Erro ao deletar livro:', error)
+      console.log(`Livro ${bookToDelete.id} deletado (simulado).`)
+    } catch (err) {
       toast({
-        title: 'Erro de Exclusão',
-        description: 'Não foi possível remover o livro. Tente novamente.',
+        title: 'Erro',
+        description: 'Não foi possível deletar o livro.',
       })
     } finally {
       setIsDeleting(false)
-      setBookToDelete(null) // Fecha o modal
+      setBookToDelete(null)
     }
   }
 
-  // NOVO: LÓGICA PARA ATUALIZAR STATUS DE LEITURA
+  // Atualiza status de leitura
   const handleStatusChange = async (bookId: string, newStatus: boolean) => {
     const book = books.find(b => b.id === bookId)
     if (!book) return
 
     try {
-      // ⚠️ SIMULAÇÃO DA CHAMADA DE API (Substitua por seu fetch real)
-      // O livro original (no array `books`) não será atualizado aqui,
-      // mas no seu projeto real, você chamaria `router.refresh()` após o sucesso.
       await new Promise(resolve => setTimeout(resolve, 500))
-      // const response = await fetch(`/api/books/${bookId}`, {
-      //    method: 'PATCH',
-      //    body: JSON.stringify({ isRead: newStatus })
-      // });
-      // if (!response.ok) throw new Error('Falha ao atualizar status.');
-
       toast({
-        title: 'Status Atualizado!',
-        description: `O livro "${book.title}" agora está marcado como ${
+        title: 'Status atualizado',
+        description: `O livro "${book.title}" agora está ${
           newStatus ? 'LIDO' : 'NÃO LIDO'
         }.`,
       })
-
-      console.log(
-        `Status do livro ID ${bookId} alterado para ${
-          newStatus ? 'Lido' : 'A Ler'
-        } (simulado).`
-      )
-      // router.refresh(); // Atualiza a lista após sucesso
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error)
+    } catch (err) {
       toast({
-        title: 'Erro de Status',
-        description: 'Não foi possível atualizar o status de leitura.',
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status do livro.',
       })
     }
   }
@@ -128,34 +88,34 @@ export default function BookList({ books }: BookListProps) {
 
   return (
     <>
-      {/* Container Principal do Grid */}
       <div
         className="
-            grid
-            grid-cols-2          /* Mobile (padrão): 2 Colunas */
-            sm:grid-cols-3       /* Small (Tablets): 3 Colunas */
-            lg:grid-cols-4       /* Large (Laptops): 4 Colunas */
-            xl:grid-cols-5       /* Extra Grande: 5 Colunas */
-            gap-6 mt-2
+          grid
+          grid-cols-2
+          sm:grid-cols-3
+          lg:grid-cols-4
+          xl:grid-cols-5
+          gap-6 mt-2
         "
       >
         {books.map(book => (
           <BookCard
             key={book.id}
             book={book}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onStatusChange={handleStatusChange} // NOVO: Passa o handler de status
+            onView={() => onView(book.id)}
+            onEdit={() => onEdit(book.id)}
+            onDelete={() => handleDelete(book.id)}
+            onStatusChange={(newStatus: boolean) =>
+              handleStatusChange(book.id, newStatus)
+            }
           />
         ))}
       </div>
 
-      {/* --- MODAL DE CONFIRMAÇÃO DE DELEÇÃO --- */}
+      {/* Modal de exclusão */}
       {bookToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-6 transform transition-all duration-300 scale-100">
-            {/* Header do Modal */}
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="text-xl font-bold text-red-600 dark:text-red-400">
                 Confirmar Exclusão
@@ -163,14 +123,13 @@ export default function BookList({ books }: BookListProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setBookToDelete(null)} // Fecha o modal
+                onClick={() => setBookToDelete(null)}
                 disabled={isDeleting}
               >
                 <X className="w-5 h-5 text-gray-500" />
               </Button>
             </div>
 
-            {/* Conteúdo do Modal */}
             <p className="text-gray-700 dark:text-gray-300">
               Tem certeza que deseja deletar o livro
               <strong className="block mt-1 text-base">
@@ -179,9 +138,7 @@ export default function BookList({ books }: BookListProps) {
               de forma permanente? Esta ação não pode ser desfeita.
             </p>
 
-            {/* Ações do Modal */}
             <div className="flex justify-end space-x-3">
-              {/* Botão CANCELAR (Volta para a biblioteca) */}
               <Button
                 variant="outline"
                 onClick={() => setBookToDelete(null)}
@@ -189,8 +146,6 @@ export default function BookList({ books }: BookListProps) {
               >
                 Cancelar
               </Button>
-
-              {/* Botão CONFIRMAR DELEÇÃO (Aciona o processo de exclusão) */}
               <Button
                 variant="destructive"
                 onClick={confirmDelete}

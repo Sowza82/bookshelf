@@ -1,103 +1,74 @@
 'use client'
 
+// 🚨 CORREÇÃO 1: Importamos a interface 'Book' correta de @/types/book
+import { Book } from '@/types/book'
+// Removemos a importação de BookType do actions/book
+import { getBookById } from '@/app/actions/book'
+
 import BookForm from '@/components/book/book-form'
-import { BookType, updateBook } from '@/app/actions/book' // ⚠️ IMPORTANTE: Server Action de Update
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { toast, Toaster } from 'sonner'
-
-// ⚠️ MOCK: Você deve buscar o livro do seu estado global ou diretamente do banco de dados.
-// Como não temos a hook 'useBooks', vamos simular uma busca.
-const MOCK_BOOKS: BookType[] = [
-    { id: '1', title: 'A Roda do Tempo', author: 'Robert Jordan', readingStatus: 'lendo', rating: 4, totalPages: 800, currentPage: 150, coverUrl: null, genre: 'Fantasia', synopsis: 'Mock Sinopse 1', isbn: null, notes: null, userId: 'user_id_simulado_123' },
-    { id: '2', title: 'O Monge e o Executivo', author: 'James C. Hunter', readingStatus: 'lido', rating: 5, totalPages: 180, currentPage: 180, coverUrl: null, genre: 'Negócios', synopsis: 'Mock Sinopse 2', isbn: null, notes: null, userId: 'user_id_simulado_123' },
-];
-
-// --- COMPONENTE PRINCIPAL ---
+import { toast } from 'sonner' // Assumindo que você usa sonner
 
 export default function EditBookPage() {
+  const params = useParams()
   const router = useRouter()
-  // Captura o ID da URL, que deve ser uma string (do nome da pasta: [id])
-  const params = useParams<{ id: string }>()
+  const id = params.id as string
 
-  const [book, setBook] = useState<(BookType & { id: string }) | null>(null)
+  // 🚨 CORREÇÃO 2: Usamos a interface Book para o estado
+  const [book, setBook] = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
-  const bookId = params.id
 
-  // --- Efeito de Carregamento e Busca do Livro ---
   useEffect(() => {
-    if (!bookId) {
-        setLoading(false);
-        return;
-    }
-
-    // 💡 Substitua esta linha pela sua lógica REAL de busca de livro
-    // Ex: const found = books.find(b => b.id === bookId)
-    const found = MOCK_BOOKS.find(b => b.id === bookId) as (BookType & { id: string }) | undefined
-
-    if (found) {
-        setBook(found)
-    } else {
-        // Livro não encontrado (404)
-        toast.error('Livro não encontrado. Redirecionando...', { duration: 2000 })
-        setTimeout(() => router.push('/biblioteca'), 500)
-    }
-    setLoading(false)
-  }, [bookId, router]) // Dependências: bookId e router
-
-  // --- Handler de Persistência (Conecta com a Server Action) ---
-  const handleSave = async (updatedBookData: BookType) => {
-    if (!bookId) {
-        toast.error('ID do livro não encontrado para salvar.', { duration: 2000 });
-        return;
-    }
-
-    try {
-        // 💡 CONEXÃO REAL: Chama a Server Action de atualização
-        const result = await updateBook(bookId, updatedBookData);
-
-        if (result) {
-            // O toast de sucesso já é disparado no BookForm
-            // Redireciona para a página de visualização do livro
-            router.push(`/livro/${bookId}`)
+    const fetchBook = async () => {
+      if (!id) return
+      setLoading(true)
+      try {
+        // getBookById foi tipado para retornar Promise<Book | null>
+        const data = await getBookById(id)
+        if (data) {
+          setBook(data)
         } else {
-            // O erro já é capturado e exibido no BookForm, mas mantemos o console
-            console.error("Falha na Server Action de updateBook. Verifique o console do servidor.");
+          toast.error('Livro não encontrado.')
+          router.push('/biblioteca')
         }
-
-    } catch (error) {
-        console.error('Falha ao salvar livro (erro de rede/cliente):', error)
-        toast.error('Ocorreu um erro ao tentar salvar as alterações.')
+      } catch (error) {
+        console.error('Erro ao buscar livro:', error)
+        toast.error('Falha ao carregar dados do livro.')
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchBook()
+  }, [id, router])
+
+  const handleSubmit = async (formData: FormData) => {
+    // A lógica de atualização aqui depende de como você implementou updateBook.
+    // Se updateBook usa o ID e o objeto de dados (como no seu actions/book.ts),
+    // você precisará extrair os dados do FormData ou chamar uma função helper.
+
+    // Simulação de chamada de atualização:
+    // const success = await updateBookFromForm(id, formData);
+
+    toast.info('Função de submissão não implementada totalmente.')
   }
 
-  // --- Handler de Cancelamento ---
-  const handleCancel = () => {
-    // Retorna para a página de visualização do livro ou para a biblioteca
-    if (bookId) {
-        router.push(`/livro/${bookId}`)
-    } else {
-        router.back()
-    }
-  }
-
-  // --- Exibição de Estados ---
-  if (loading || !book)
+  if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center text-xl text-blue-600 dark:text-blue-400">
-        Carregando informações do livro...
+      <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">
+        Carregando dados para edição...
       </div>
     )
 
+  if (!book) return null // ou uma mensagem de erro
+
   return (
-    <>
-      <BookForm
-        initialData={book} // 🔑 ENVIA OS DADOS DO LIVRO PARA PREENCHER O FORM
-        onSave={handleSave} // 🔑 LIGA A FUNÇÃO DE SALVAMENTO DESTA PÁGINA
-        onCancel={handleCancel}
-      />
-      {/* O Toaster geralmente fica no Layout, mas funciona aqui também */}
-      <Toaster richColors position="bottom-right" />
-    </>
+    <div className="px-4 py-6 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Editar Livro: {book.title}</h1>
+
+      {/* O BookForm precisará de um 'defaultValues' tipado como Book */}
+      {/* O handleSubmit real aqui deve processar o formulário e chamar updateBook */}
+      <BookForm initialData={book} onSubmit={handleSubmit} />
+    </div>
   )
 }

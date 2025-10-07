@@ -1,113 +1,158 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { Book } from "@prisma/client"; // Adicionando o tipo do Prisma para clareza
+import { z, ZodError } from "zod";
+// Importamos a interface Book correta do front-end
+import { Book } from "@/types/book";
 
 // ======================================================================
-// 1. CRIAÇÃO (Via FormData)
+// DEFINIÇÕES ZOD
+// ======================================================================
+
+// 🚨 Define a união de literais de string que o 'readingStatus' deve aceitar
+const READING_STATUS = z.union([
+  z.literal("UNREAD"),
+  z.literal("READING"),
+  z.literal("FINISHED"),
+]);
+
+const CREATE_BOOK_SCHEMA = z.object({
+  title: z.string().min(1, "Título é obrigatório"),
+  author: z.string().min(1, "Autor é obrigatório"),
+  totalPages: z.preprocess(
+    (val) => Number(val),
+    z.number().int().positive("Total de páginas inválido")
+  ),
+  genre: z.string().optional().default("Não informado"),
+});
+
+const UPDATE_BOOK_SCHEMA = z.object({
+  title: z.string().min(1).optional(),
+  author: z.string().min(1).optional(),
+  // Aplica a restrição de tipo ao campo 'readingStatus'
+  readingStatus: READING_STATUS.optional(),
+  currentPage: z.preprocess(
+      (val) => (val === '' ? undefined : Number(val)),
+      z.number().int().nonnegative("Página atual inválida").optional()
+    ),
+  totalPages: z.preprocess(
+      (val) => (val === '' ? undefined : Number(val)),
+      z.number().int().positive("Total de páginas inválido").optional()
+    ),
+  genre: z.string().optional(),
+});
+
+// ======================================================================
+// CRIAÇÃO
 // ======================================================================
 export async function createBook(formData: FormData) {
-  const title = formData.get("title") as string;
-  const author = formData.get("author") as string;
-  const totalPages = Number(formData.get("totalPages"));
-  const genre = (formData.get("genre") as string) || "Não informado";
+  try {
+    const data = CREATE_BOOK_SCHEMA.parse({
+      title: formData.get("title"),
+      author: formData.get("author"),
+      totalPages: formData.get("totalPages"),
+      genre: formData.get("genre"),
+    });
 
-  const newBook = await prisma.book.create({
-    data: { title, author, totalPages, genre },
-  });
-
-  return newBook;
+    return await prisma.book.create({ data });
+  } catch (err) {
+    if (err instanceof ZodError) {
+      const messages = Object.values(err.flatten().fieldErrors).flat().join(", ");
+      throw new Error(messages || err.message);
+    }
+    throw err;
+  }
 }
 
 // ======================================================================
-// 2. BUSCA
+// BUSCA
 // ======================================================================
-
-// Tipagem para os filtros de busca
 interface BookFilters {
   q?: string;
   genre?: string;
 }
 
-// Buscar livros com filtros opcionais
-export async function getBooks(filters?: BookFilters) {
-  const { q, genre } = filters || {};
+// Tipado para retornar a interface Book[] correta
+export async function getBooks(filters?: BookFilters): Promise<Book[]> {
+  const filtersArray: any[] = [];
 
-  return await prisma.book.findMany({
-    where: {
-      AND: [
-        // Filtro por termo (título ou autor)
-        q
-          ? {
-              OR: [
-                { title: { contains: q, mode: "insensitive" } },
-                { author: { contains: q, mode: "insensitive" } },
-              ],
-            }
-          : {},
-        // Filtro por gênero (se não for "Todos os gêneros")
-        genre && genre !== "Todos os gêneros"
-          ? { genre: { equals: genre } }
-          : {},
+  if (filters?.q) {
+    filtersArray.push({
+      OR: [
+        { title: { contains: filters.q, mode: "insensitive" } },
+        { author: { contains: filters.q, mode: "insensitive" } },
       ],
-    },
-    orderBy: { title: "asc" },
-  });
-}
-
-// Buscar todos os livros sem filtro
-export async function getAllBooks() {
-  return await prisma.book.findMany({
-    orderBy: { title: "asc" },
-  });
-}
-
-// Buscar livro por ID
-export async function getBookById(id: string) {
-  return await prisma.book.findUnique({ where: { id } });
-}
-
-// ======================================================================
-// 3. ATUALIZAÇÃO (Duas Funções)
-// ======================================================================
-
-// 3.1. Função Auxiliar para a Rota de API (PUT)
-// Esta função recebe um objeto de dados limpo, ideal após a validação Zod
-export async function updateBook(id: string, data: Partial<Book>) {
-  // O uso de Partial<Book> permite que a API envie APENAS os campos que mudaram
-  // e aceita o objeto de dados já processado pelo Zod.
-  try {
-    const updatedBook = await prisma.book.update({
-      where: { id },
-      data: data,
     });
-    return updatedBook;
-  } catch (error) {
-    // Retorna null se não encontrar o ID ou ocorrer outro erro do Prisma
-    console.error("Erro no Prisma ao atualizar:", error);
+  }
+
+  if (filters?.genre && filters.genre !== "Todos os gêneros") {
+    filtersArray.push({ genre: { equals: filters.genre } });
+  }
+
+  const books = await prisma.book.findMany({
+    where: filtersArray.length > 0 ? { AND: filtersArray } : {},
+    orderBy: { title: "asc" },
+  });
+
+  // Assegura que o tipo de retorno do Prisma é compatível com Book[]
+  return books as Book[];
+}
+
+// Função que retorna todos os livros (Dashboard)
+export async function getAllBooks(): Promise<Book[]> {
+  const books = await prisma.book.findMany({ orderBy: { title: "asc" } });
+  return books as Book[];
+}
+
+// Busca por ID
+export async function getBookById(id: string): Promise<Book | null> {
+  const book = await prisma.book.findUnique({ where: { id } });
+  return book as Book | null;
+}
+
+// ======================================================================
+// ATUALIZAÇÃO
+// ======================================================================
+// O tipo Partial<Book> agora está seguro, pois o Zod foi corrigido
+export async function updateBook(id: string, data: Partial<Book>) {
+  try {
+    return await prisma.book.update({ where: { id }, data });
+  } catch (err) {
+    console.error("Erro ao atualizar livro:", err);
     return null;
   }
 }
 
-// 3.2. Função para Formulário (Form Action)
-// Esta função recebe FormData e faz a conversão/parsing
 export async function updateBookFromForm(id: string, formData: FormData) {
-  const title = formData.get("title") as string;
-  const author = formData.get("author") as string;
-  const readingStatus = formData.get("readingStatus") as string;
-  const currentPage = Number(formData.get("currentPage"));
-  const totalPages = Number(formData.get("totalPages"));
+  try {
+    const parsedData = UPDATE_BOOK_SCHEMA.parse({
+      title: formData.get("title"),
+      author: formData.get("author"),
+      readingStatus: formData.get("readingStatus"),
+      currentPage: formData.get("currentPage"),
+      totalPages: formData.get("totalPages"),
+      genre: formData.get("genre"),
+    });
 
-  const data = { title, author, readingStatus, currentPage, totalPages };
-
-  // Reutiliza a função principal de update
-  return updateBook(id, data);
+    // parsedData agora tem o 'readingStatus' tipado corretamente, resolvendo o erro
+    return updateBook(id, parsedData);
+  } catch (err) {
+    if (err instanceof ZodError) {
+      const messages = Object.values(err.flatten().fieldErrors).flat().join(", ");
+      throw new Error(messages || err.message);
+    }
+    throw err;
+  }
 }
 
 // ======================================================================
-// 4. DELEÇÃO
+// DELEÇÃO
 // ======================================================================
 export async function deleteBook(id: string) {
-  // Não precisa do try/catch aqui, pois a rota de API já faz isso
-  return await prisma.book.delete({ where: { id } });
+  try {
+    return await prisma.book.delete({ where: { id } });
+  } catch (err) {
+    console.error("Erro ao deletar livro:", err);
+    return null;
+  }
 }
