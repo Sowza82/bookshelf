@@ -1,55 +1,89 @@
 // src/app/api/books/[id]/route.ts
-import { getBookById, updateBook, deleteBook } from '@/actions/book' // Reutiliza Server Actions
-import { NextResponse } from 'next/server'
 
-interface Context {
-  params: {
-    id: string // O ID dinâmico da URL
-  }
+import { NextRequest, NextResponse } from 'next/server'
+import { getBookById, updateBook, deleteBook } from '@/app/actions/book'
+import { BOOK_UPDATE_SCHEMA } from '@/lib/validation'
+import { ZodError } from 'zod'
+
+// ======================================================================
+// GET /api/books/[id]: Buscar livro por ID
+// ======================================================================
+export async function GET(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const bookId = params.id
+        const book = await getBookById(bookId)
+
+        if (!book) {
+            return NextResponse.json({ message: 'Livro não encontrado.' }, { status: 404 })
+        }
+
+        return NextResponse.json(book, { status: 200 })
+    } catch (err) {
+        console.error('Erro ao buscar livro por ID:', err)
+        return NextResponse.json({ message: 'Falha ao buscar livro.' }, { status: 500 })
+    }
 }
 
-// GET /api/books/[id]: Buscar um livro por ID
-export async function GET(request: Request, context: Context) {
-  try {
-    const book = await getBookById(context.params.id)
+// ======================================================================
+// PUT /api/books/[id]: Atualizar livro por ID
+// ======================================================================
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const bookId = params.id
+        const body = await request.json()
 
-    if (!book) {
-      return NextResponse.json({ message: 'Livro não encontrado' }, { status: 404 })
+        // Validação Zod
+        const parsedBody = BOOK_UPDATE_SCHEMA.parse(body)
+
+        // Chama a Server Action (que retorna o objeto atualizado ou null/undefined em caso de falha)
+        const updatedBook = await updateBook(bookId, parsedBody)
+
+        // Verificação de sucesso
+        if (!updatedBook) {
+            // Isso pode ocorrer se o ID não for encontrado (embora o Prisma update lide com isso)
+            return NextResponse.json({ message: 'Livro não encontrado para atualização.' }, { status: 404 })
+        }
+
+        return NextResponse.json(updatedBook, { status: 200 })
+    } catch (err) {
+        if (err instanceof ZodError) {
+            // Retorna erros de validação
+            return NextResponse.json(
+                { message: err.errors.map(e => e.message).join(', ') },
+                { status: 400 }
+            )
+        }
+
+        console.error('Erro ao atualizar livro:', err)
+        return NextResponse.json({ message: 'Falha ao atualizar o livro.' }, { status: 500 })
     }
-
-    return NextResponse.json(book, { status: 200 })
-  } catch (error) {
-    return NextResponse.json({ message: 'Falha ao buscar livro.' }, { status: 500 })
-  }
 }
 
-// PUT /api/books/[id]: Atualizar um livro
-export async function PUT(request: Request, context: Context) {
-  try {
-    const body = await request.json()
-    const result = await updateBook({ id: context.params.id, ...body })
+// ======================================================================
+// DELETE /api/books/[id]: Remover livro por ID
+// ======================================================================
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    const bookId = params.id;
 
-    if (!result.success) {
-      return NextResponse.json({ message: result.error }, { status: 400 })
+    try {
+
+        await deleteBook(bookId)
+
+        // Se a execução chegar aqui sem erro, o livro foi deletado.
+        return new Response(null, { status: 204 }) // 204 No Content é o padrão para DELETE bem-sucedido.
+
+    } catch (err) {
+        console.error('Erro ao deletar livro:', err);
+
+        return NextResponse.json({ message: 'Falha ao deletar livro.' }, { status: 500 })
     }
-
-    return NextResponse.json({ message: 'Livro atualizado com sucesso' }, { status: 200 })
-  } catch (error) {
-    return NextResponse.json({ message: 'Falha ao atualizar livro.' }, { status: 400 })
-  }
-}
-
-// DELETE /api/books/[id]: Remover um livro
-export async function DELETE(request: Request, context: Context) {
-  try {
-    const result = await deleteBook(context.params.id)
-
-    if (!result.success) {
-      return NextResponse.json({ message: result.error }, { status: 404 })
-    }
-
-    return new Response(null, { status: 204 }) // 204 No Content para deleção bem-sucedida
-  } catch (error) {
-    return NextResponse.json({ message: 'Falha ao deletar livro.' }, { status: 500 })
-  }
 }

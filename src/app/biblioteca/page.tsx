@@ -1,107 +1,179 @@
-// src/app/biblioteca/page.tsx
-'use client'
+'use client';
 
-import BookCard from '@/components/book/book-card'
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useBooks } from '@/hooks/useBooks' // Corrigido: useBooks com "s"
-import { BookOpenCheck, ChevronLeft, Plus, Search, Tag } from 'lucide-react'
-import Link from 'next/link'
+import BookList from "@/components/book/book-list";
+import BookSearch from "@/components/book/book-search";
+import LoadingSpinner from "@/components/loading/loading-spinner";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, BookOpen, PlusCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation"; // 🔑 1. IMPORTAÇÃO CHAVE
+import { useCallback, useEffect, useState } from "react";
 
-export default function LibraryPage() {
-  // Hook correto
-  const { books } = useBooks()
+// Tipo de livro (Mantenha o tipo Book completo para que o Card funcione)
+type Book = {
+  id: string;
+  title: string;
+  author: string;
+  genre: string;
+    // Adicione outros campos necessários aqui, se o BookList/BookCard exigir:
+    rating: number;
+    year: string;
+    coverUrl?: string;
+    isRead: boolean;
+};
 
-  // Lista de gêneros disponíveis para filtro
-  const genres = [
-    'Todos os gêneros',
-    'Ficção',
-    'Fantasia',
-    'Distopia',
-    'Romance',
-    'Clássico',
-    'Não-Ficção',
-    'Outro',
-  ]
+const availableGenres = [
+    // ... seus gêneros
+    "Todos os gêneros",
+  "Ficção",
+  "Fantasia",
+  "Romance",
+  "Thriller",
+  "Ficção Científica",
+  "História",
+  "Biografia",
+  "Autoajuda",
+  "Tecnologia",
+  "Clássico",
+  "Distopia",
+  "Não-Ficção",
+  "Poesia",
+  "Aventura",
+  "Mistério",
+  "Infantil",
+  "Jovem Adulto",
+  "Horror",
+];
 
-  return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* 1. Header da Página */}
-        <header className="space-y-6">
-          <Link href="/" passHref>
-            <div className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Voltar ao Dashboard
+export default function BibliotecaPage() {
+    const router = useRouter(); // 🔑 2. INICIALIZAÇÃO DO ROUTER
+    const [books, setBooks] = useState<Book[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [genreFilter, setGenreFilter] = useState("Todos os gêneros");
+
+    const hasActiveFilters = searchQuery.length > 0 || genreFilter !== "Todos os gêneros";
+
+    // ... (fetchBooks, useEffect e handleFilterChange permanecem iguais)
+
+    const fetchBooks = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (genreFilter && genreFilter !== "Todos os gêneros") params.set("genre", genreFilter);
+
+    try {
+      const res = await fetch(`/api/books?${params.toString()}`);
+      if (!res.ok) throw new Error("Falha ao buscar livros");
+      const data = await res.json();
+      setBooks(data);
+    } catch (error) {
+      console.error("Erro ao carregar biblioteca:", error);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+    }, [searchQuery, genreFilter]);
+
+    useEffect(() => {
+       fetchBooks();
+    }, [fetchBooks]);
+
+    const handleFilterChange = (q: string, g: string) => {
+       setSearchQuery(q);
+       setGenreFilter(g);
+    };
+
+    const handleClearFilters = () => {
+       setSearchQuery("");
+       setGenreFilter("Todos os gêneros");
+    };
+
+    // 🔑 3. HANDLER DE EDIÇÃO (ROTEAMENTO)
+    const handleEdit = (bookId: string) => {
+        // Redireciona para a página de edição (ex: /livro/123/editar)
+        router.push(`/livro/${bookId}/editar`);
+    };
+
+    // 🔑 4. HANDLER DE VISUALIZAÇÃO (Para o botão "Ver Detalhes")
+    const handleView = (bookId: string) => {
+        // Redireciona para a página de detalhes (ex: /livro/123)
+        router.push(`/livro/${bookId}`);
+    };
+
+    // 💡 IMPORTANTE: Você precisará criar handlers para onDelete e onStatusChange
+    // se quiser que esses botões também funcionem.
+
+    return (
+    <div className="p-6 md:p-10 space-y-8 min-h-screen bg-background text-foreground">
+        {/* ... (cabeçalho e Link para Dashboard) ... */}
+
+        <Link
+           href="/dashboard"
+           className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+        >
+           <ArrowLeft className="w-4 h-4 mr-2" />
+           Voltar ao Dashboard
+        </Link>
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 pb-4">
+            {/* ... (Título e botão Adicionar Livro) ... */}
+            <div className="flex items-start space-x-3">
+                <div className="space-y-0.5">
+                    <h1 className="text-3xl font-bold flex items-center">
+                        <BookOpen className="w-7 h-7 mr-3 text-primary" /> Biblioteca Pessoal
+                    </h1>
+                    <p className="text-muted-foreground">Gerencie sua coleção de livros.</p>
+                </div>
             </div>
-          </Link>
-
-          <div className="flex justify-between items-center pb-4">
-            <h1 className="text-2xl font-bold flex items-center text-foreground">
-              <BookOpenCheck className="w-6 h-6 mr-3 text-primary" />
-              Biblioteca Pessoal
-            </h1>
-
-            {/* Botão para adicionar novo livro */}
-            <Link href="/livro/novo" passHref>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Livro
-              </Button>
+            <Link href="/livro/novo">
+                <Button className="flex items-center">
+                    <PlusCircle className="w-5 h-5 mr-2" />
+                    Adicionar Livro
+                </Button>
             </Link>
-          </div>
-        </header>
-
-        {/* 2. Barra de pesquisa e filtro por gênero */}
-        <div className="mt-8 mb-10 p-4 bg-card rounded-xl shadow-md border">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            {/* Campo de busca */}
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar por título ou autor..."
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-background text-foreground"
-              />
-            </div>
-
-            {/* Seletor de gênero */}
-            <Select defaultValue="Todos os gêneros">
-              <SelectTrigger className="w-full md:w-[200px] flex items-center">
-                <Tag className="w-4 h-4 mr-2 text-muted-foreground" />
-                <SelectValue placeholder="Todos os gêneros" />
-              </SelectTrigger>
-              <SelectContent>
-                {genres.map(genre => (
-                  <SelectItem key={genre} value={genre}>
-                    {genre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
-        {/* 3. Grid de livros */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {books.map(book => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
+        <BookSearch
+           genres={availableGenres}
+           initialSearch={searchQuery}
+           initialGenre={genreFilter}
+           onSearch={handleFilterChange}
+        />
 
-        {/* Mensagem quando a biblioteca estiver vazia */}
-        {books.length === 0 && (
-          <p className="text-center text-xl text-muted-foreground mt-12">
-            Sua biblioteca está vazia. Adicione seu primeiro livro!
-          </p>
-        )}
-      </div>
-    </div>
-  )
+        {/* ... (Informações e botão Limpar Filtros) ... */}
+        <div className="flex justify-between items-center">
+           <p className="text-sm text-muted-foreground">
+               {loading ? "Buscando..." : `${books.length} livro(s) encontrado(s).`}
+           </p>
+
+           {hasActiveFilters && !loading && (
+               <Button variant="link" onClick={handleClearFilters} className="text-primary hover:underline h-auto p-0 text-sm">
+                 Limpar Filtros
+               </Button>
+           )}
+        </div>
+
+        {loading ? (
+           <LoadingSpinner message="Carregando biblioteca..." />
+        ) : books.length > 0 ? (
+           // 🔑 4. PASSA O HANDLER PARA O BOOKLIST
+           <BookList
+               books={books}
+               onEdit={handleEdit}
+               onView={handleView}
+            />
+        ) : (
+           // ... (mensagem de livro não encontrado) ...
+             <div className="text-center py-10 bg-muted/50 rounded-lg mt-6">
+                 <p className="text-lg font-medium text-muted-foreground">
+                     Nenhum livro corresponde aos critérios de busca ou filtro.
+                 </p>
+                 <p className="text-sm text-muted-foreground mt-1">
+                     Tente pesquisar outro termo ou limpar os filtros.
+                 </p>
+           </div>
+        )}
+    </div>
+  );
 }

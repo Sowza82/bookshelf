@@ -1,9 +1,9 @@
 // src/lib/constants.ts
 
-/** Chave usada para armazenar a lista de livros no LocalStorage. */
-export const LOCAL_STORAGE_BOOK_KEY = 'bookshelf_user_collection'
-
-/** Lista de gêneros disponíveis para seleção e filtro. */
+/**
+ * Lista de gêneros disponíveis para seleção e filtro.
+ * * Usado na API /api/categories e no schema de validação Zod.
+ */
 export const AVAILABLE_GENRES = [
   'Romance',
   'Ficção Científica',
@@ -25,6 +25,11 @@ export const AVAILABLE_GENRES = [
   'Outro',
 ] as const;
 
+/**
+ * Tipagem auxiliar para garantir que os gêneros usados no frontend e na API correspondam.
+ */
+export type Genre = typeof AVAILABLE_GENRES[number];
+
 
 /** Tamanho padrão de ícones (16px = 4 no Tailwind) */
-export const ICON_SIZE_SM = 16
+export const ICON_SIZE_SM = 16;

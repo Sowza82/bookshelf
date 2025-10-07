@@ -1,13 +1,19 @@
 export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  coverImageUrl?: string;
-  publicationYear?: number;
-  genre?: string;
-  read: boolean;
-  rating: number;
-  totalPages?: number;
-  currentPage?: number;
-  notes?: string;
+  id: string
+  title: string
+  author: string
+
+  readingStatus: 'UNREAD' | 'READING' | 'FINISHED'
+  currentPage: number
+  totalPages: number
+  rating: number
+
+  genre?: string
+  coverUrl?: string
+  synopsis?: string
+  isbn?: string
+  notes?: string
+
+  createdAt?: Date
+  updatedAt?: Date
 }

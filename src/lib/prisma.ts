@@ -1,19 +1,18 @@
-// src/lib/prisma.ts
-
 import { PrismaClient } from '@prisma/client'
 
-// 🔑 Solução para o Hot Reloading do Next.js
-// Cria um objeto global para armazenar a instância do Prisma Client
-// Isso evita que o Next.js crie uma nova instância a cada hot reload
-const globalForPrisma = global as unknown as { prisma: PrismaClient | undefined }
+// Adiciona prisma ao objeto global para evitar criar múltiplas instâncias
+// durante o desenvolvimento (Hot Reloading)
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
 
+// Exporta a instância única do PrismaClient
 export const prisma =
-  globalForPrisma.prisma ||
+  globalForPrisma.prisma ??
   new PrismaClient({
-    // Opcional: Adicionar logs de query para debug
+    // Opcional: Ativa o log de queries para debug no console
     log: ['query', 'info', 'warn', 'error'],
   })
 
+// Em ambiente de desenvolvimento, anexa a instância ao globalThis
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
-// Agora, qualquer arquivo pode importar a instância 'prisma' de '@/lib/prisma'
