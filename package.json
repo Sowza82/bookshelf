@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
  "scripts": {
-  "dev": "cross-env PRISMA_SKIP_POSTINSTALL_GENERATE=true next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "eslint",
-  "prisma:seed": "ts-node prisma/seed.mts"
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prisma:seed": "ts-node prisma/seed.mts",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:studio": "npx prisma studio"
 },
 
   "dependencies": {
