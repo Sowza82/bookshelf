@@ -1,19 +1,25 @@
-// src/app/api/books/[id]/route.ts
-
-import { NextRequest, NextResponse } from 'next/server'
-import { getBookById, updateBook, deleteBook } from '@/app/actions/book'
+import { deleteBook, getBookById, updateBook } from '@/app/actions/book'
 import { BOOK_UPDATE_SCHEMA } from '@/lib/validation'
+import { NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
+
+// Define a interface para o segundo argumento (contexto)
+// Isso resolve o erro de tipagem que ocorre ao desestruturar diretamente.
+interface RouteContext {
+    params: {
+        id: string
+    }
+}
 
 // ======================================================================
 // GET /api/books/[id]: Buscar livro por ID
 // ======================================================================
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: RouteContext // Usando o objeto de contexto tipado
 ) {
     try {
-        const bookId = params.id
+        const bookId = context.params.id // Acessando params via context
         const book = await getBookById(bookId)
 
         if (!book) {
@@ -32,10 +38,10 @@ export async function GET(
 // ======================================================================
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: RouteContext // Usando o objeto de contexto tipado
 ) {
     try {
-        const bookId = params.id
+        const bookId = context.params.id // Acessando params via context
         const body = await request.json()
 
         // Validação Zod
@@ -70,12 +76,11 @@ export async function PUT(
 // ======================================================================
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: RouteContext // Usando o objeto de contexto tipado
 ) {
-    const bookId = params.id;
+    const bookId = context.params.id; // Acessando params via context
 
     try {
-
         await deleteBook(bookId)
 
         // Se a execução chegar aqui sem erro, o livro foi deletado.
