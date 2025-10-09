@@ -1,25 +1,74 @@
 // src/app/livro/novo/page.tsx
-'use client'
+'use client';
 
-import BookForm from '@/components/book/book-form'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useBooks } from '@/hooks/useBooks';
 
-export default function NewBookPage() {
+export default function AddBookPage() {
+  const router = useRouter();
+  const { addBook } = useBooks();
+
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (title && author) {
+      addBook({
+        title,
+        author,
+        pages: 0,
+        readPages: 0,
+        status: 'unread',
+        rating: 0,
+        genre: 'Ficção',
+        year: new Date().getFullYear(),
+      });
+      router.push('/biblioteca');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="sticky top-0 bg-background z-10 shadow-sm py-6 border-b">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-primary">
-            Adicionar Novo Livro
-          </h1>
-        </div>
-      </header>
-
-      <main className="flex-grow flex items-start justify-center px-4 sm:px-6 lg:px-8 py-10">
-        <div className="w-full max-w-3xl bg-card p-6 sm:p-8 rounded-xl shadow-lg">
-          {/* O formulário é carregado sem o prop 'bookToEdit', então ele entra em modo de Cadastro */}
-          <BookForm />
-        </div>
-      </main>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+      <div className="w-full max-w-xl p-6 bg-gray-800 rounded-lg shadow-lg">
+        <h1 className="text-3xl font-bold mb-6 text-center">Adicionar Novo Livro</h1>
+        
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="title" className="block text-gray-400 mb-1">Título:</label>
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="author" className="block text-gray-400 mb-1">Autor:</label>
+            <input
+              type="text"
+              id="author"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring focus:border-blue-500"
+              required
+            />
+          </div>
+          
+          <div className="flex gap-2 justify-end mt-4">
+            <Link href="/biblioteca" className="p-2 bg-gray-600 hover:bg-gray-700 transition rounded-lg font-bold">
+              Cancelar
+            </Link>
+            <button type="submit" className="p-2 bg-emerald-600 hover:bg-emerald-700 transition rounded-lg font-bold">
+              Salvar Livro
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  )
+  );
 }

@@ -15,12 +15,15 @@ export type Book = {
   synopsis?: string;
 };
 
-// Dados iniciais para a aplicação.
-const initialBooks: Book[] = [
+// src/data/initial-books.ts
+import { Book } from '@/types/book';
+
+export const initialBooks: Book[] = [
   {
     id: '1',
     title: 'O Poder do Hábito',
     author: 'Charles Duhigg',
+    cover: '/covers/o-poder-do-habito.png', // Caminho corrigido
     pages: 408,
     readPages: 150,
     status: 'reading',
@@ -33,6 +36,7 @@ const initialBooks: Book[] = [
     id: '2',
     title: 'A Revolução dos Bichos',
     author: 'George Orwell',
+    cover: '/covers/revolucao-bichos.png', // Caminho corrigido
     pages: 152,
     readPages: 152,
     status: 'read',
@@ -45,6 +49,7 @@ const initialBooks: Book[] = [
     id: '3',
     title: 'Duna',
     author: 'Frank Herbert',
+    cover: '/covers/duna.png', // Caminho corrigido
     pages: 688,
     readPages: 0,
     status: 'unread',
@@ -57,6 +62,7 @@ const initialBooks: Book[] = [
     id: '4',
     title: '1984',
     author: 'George Orwell',
+    cover: '/covers/1984.png', // Caminho corrigido
     pages: 328,
     readPages: 0,
     status: 'unread',
@@ -69,6 +75,7 @@ const initialBooks: Book[] = [
     id: '5',
     title: 'O Hobbit',
     author: 'J.R.R. Tolkien',
+    cover: '/covers/o-hobbit.png', // Caminho corrigido
     pages: 310,
     readPages: 0,
     status: 'unread',
@@ -77,7 +84,21 @@ const initialBooks: Book[] = [
     year: 1937,
     synopsis: 'A aventura de Bilbo Bolseiro para recuperar um tesouro de um dragão, um prelúdio para O Senhor dos Anéis.'
   },
+  {
+    id: '6',
+    title: 'Mindshift',
+    author: 'Barbara Oakley',
+    cover: '/covers/mindshift.png', // Caminho corrigido
+    pages: 300,
+    readPages: 0,
+    status: 'unread',
+    rating: 0,
+    genre: 'Autoajuda',
+    year: 2017,
+    synopsis: 'Mindshift é um guia para explorar carreiras e mudar de vida, utilizando o poder do aprendizado e da neurociência.'
+  }
 ];
+// ... código posterior ...
 
 const STORAGE_KEY = 'bookshelf-books';
 

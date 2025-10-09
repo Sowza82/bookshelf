@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // src/app/biblioteca/page.tsx
 'use client'
 
@@ -11,15 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useBooks } from '@/hooks/useBooks' // Corrigido: useBooks com "s"
+import { useBooks } from '@/hooks/useBooks'
 import { BookOpenCheck, ChevronLeft, Plus, Search, Tag } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LibraryPage() {
-  // Hook correto
-  const { books } = useBooks()
+  const { books, deleteBook } = useBooks() // Extrai a função deleteBook
 
-  // Lista de gêneros disponíveis para filtro
   const genres = [
     'Todos os gêneros',
     'Ficção',
@@ -92,7 +89,7 @@ export default function LibraryPage() {
         {/* 3. Grid de livros */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {books.map(book => (
-            <BookCard key={book.id} book={book} />
+            <BookCard key={book.id} book={book} onDelete={deleteBook} />
           ))}
         </div>
 
@@ -106,41 +103,3 @@ export default function LibraryPage() {
     </div>
   )
 }
-=======
-// src/app/library/page.tsx
-'use client';
-
-import Link from 'next/link';
-import { useBooks } from '@/hooks/useBooks';
-import BookCard from '@/components/book/book-card';
-export default function LibraryPage() {
-  const { books, deleteBook } = useBooks(); // Extrai a função deleteBook
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="w-full max-w-4xl p-6 bg-gray-800 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center">Minha Biblioteca</h1>
-
-        <nav className="flex justify-center gap-4 mb-8">
-            <Link href="/" className="p-4 bg-indigo-600 hover:bg-indigo-700 transition rounded-lg font-bold">
-                Dashboard
-            </Link>
-            <Link href="/add-book" className="p-4 bg-emerald-600 hover:bg-emerald-700 transition rounded-lg font-bold">
-                Adicionar Livro
-            </Link>
-        </nav>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {books.map(book => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onDelete={deleteBook} // Passa a função para o BookCard
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
->>>>>>> 2309a29 (feat: implementa lógica de storage, hook de livros e BookCard)

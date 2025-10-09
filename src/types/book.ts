@@ -1,27 +1,41 @@
-// src/types/book.ts
-<<<<<<< HEAD
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  coverImageUrl?: string;
-  publicationYear: number;
-  genre: string;
-  read: boolean;
-  rating: number;
+// src/hooks/useBooks.ts
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  Book,
+  getBooks,
+  saveBooks,
+} from '@/lib/storage';
+
+export function useBooks() {
+  const [books, setBooks] = useState<Book[]>([]);
+
+  useEffect(() => {
+    const storedBooks = getBooks();
+    setBooks(storedBooks);
+  }, []);
+
+  const addBook = (book: Omit<Book, 'id'>) => {
+    const newBook = { ...book, id: Date.now().toString() };
+    const updatedBooks = [...books, newBook];
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks);
+  };
+
+  const updateBook = (updatedBook: Book) => {
+    const updatedBooks = books.map((book) =>
+      book.id === updatedBook.id ? updatedBook : book
+    );
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks);
+  };
+
+  const deleteBook = (id: string) => {
+    const updatedBooks = books.filter((book) => book.id !== id);
+    setBooks(updatedBooks);
+    saveBooks(updatedBooks);
+  };
+
+  return { books, addBook, updateBook, deleteBook };
 }
-=======
-export type Book = {
-  id: string;
-  title: string;
-  author: string;
-  cover?: string;
-  pages: number;
-  readPages: number;
-  status: 'reading' | 'read' | 'unread';
-  rating: number; // 1 a 5
-  genre: string;
-  year: number;
-  synopsis?: string;
-};
->>>>>>> 2309a29 (feat: implementa lógica de storage, hook de livros e BookCard)

@@ -1,51 +1,33 @@
-// src/app/page.tsx
-'use client'
+// src/app/livro/[id]/page.tsx
+import { getBookById, getBooks } from '@/lib/storage';
+import BookDetails from '@/components/book/book-details';
+import Link from 'next/link';
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useBooks } from '@/hooks/useBooks'
-import { BookOpen } from 'lucide-react'
-import Link from 'next/link'
+// (Opcional) Esta função gera as páginas de forma estática durante o build
+export async function generateStaticParams() {
+  const books = getBooks();
+  return books.map(book => ({
+    id: book.id,
+  }));
+}
 
-export default function DashboardPage() {
-  const { books } = useBooks()
+export default function BookPage({ params }: { params: { id: string } }) {
+  const book = getBookById(params.id);
+
+  if (!book) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+        <h1 className="text-3xl font-bold mb-4">Livro não encontrado</h1>
+        <Link href="/biblioteca" className="p-2 bg-indigo-600 hover:bg-indigo-700 transition rounded-lg font-bold">
+          Voltar para a Biblioteca
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold flex items-center">
-            <BookOpen className="w-6 h-6 mr-2 text-primary" />
-            Dashboard
-          </h1>
-          <Link href="/biblioteca" passHref>
-            <Button>Ver Biblioteca</Button>
-          </Link>
-        </header>
-
-        {/* Cards resumidos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total de Livros</CardTitle>
-            </CardHeader>
-            <CardContent>{books.length}</CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Livros Lidos</CardTitle>
-            </CardHeader>
-            <CardContent>{books.filter(b => b.read).length}</CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Livros Não Lidos</CardTitle>
-            </CardHeader>
-            <CardContent>{books.filter(b => !b.read).length}</CardContent>
-          </Card>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
+      <BookDetails book={book} />
     </div>
-  )
+  );
 }
