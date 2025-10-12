@@ -1,33 +1,31 @@
 'use client'
 
 import { Book } from '@/types/book'
+import { Book as BookIcon } from 'lucide-react' // Ícone do Lucide
 import Image from 'next/image'
 
 interface BookCoverProps {
-  book: Book
+  book: Pick<Book, 'title' | 'coverUrl'>
   width?: number
   height?: number
 }
 
-export function BookCover({ book, width = 150, height = 220 }: BookCoverProps) {
+export function BookCover({ book, width = 250, height = 350 }: BookCoverProps) {
   const hasCover = book.coverUrl && book.coverUrl.trim() !== ''
 
   if (!hasCover) {
-    // fallback: bloco estilizado com o nome do livro
-    const title = book.title || 'MisturaDev'
-    const colors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#3B82F6']
-    const color = colors[book.title.length % colors.length] // cor pseudo-aleatória
-
     return (
       <div
-        style={{ width, height, backgroundColor: color }}
-        className="flex items-center justify-center rounded-xl text-white font-bold text-center p-2"
+        style={{
+          width,
+          height,
+          backgroundColor: 'var(--color-primary)',
+          color: 'var(--color-background)',
+        }}
+        className="flex flex-col items-center justify-center rounded-xl p-4 text-center"
       >
-        {title
-          .split(' ')
-          .map(w => w[0])
-          .join('')}{' '}
-        {/* iniciais do título */}
+        <BookIcon className="w-12 h-12 mb-2" />
+        <span className="font-bold text-lg">Bookshelf</span>
       </div>
     )
   }

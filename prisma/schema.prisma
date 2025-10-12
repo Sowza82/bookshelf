@@ -1,9 +1,11 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -11,7 +13,7 @@ model Book {
   id            String   @id @default(uuid())
   title         String
   author        String
-  readingStatus String   @default("UNREAD")
+  readingStatus String   @default("UNREAD") // UNREAD, READING, FINISHED
   currentPage   Int      @default(0)
   totalPages    Int      @default(350)
   rating        Int      @default(0)

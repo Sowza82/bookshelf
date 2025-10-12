@@ -1,112 +1,93 @@
-// src/components/dashboard/stats-cards.tsx
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Book } from '@/types/book'
-import { BarChart2, BookOpen, BookOpenCheck, CheckCircle } from 'lucide-react'
+import { Book, BookOpen, Bookmark, CheckCircle, Star } from 'lucide-react'
 
 interface StatsCardsProps {
-  books: Book[]
-  theme?: {
-    card?: string
-    textPrimary?: string
-    textSecondary?: string
-    gaugeColor?: string
-  }
+  totalBooks: number
+  readBooks: number
+  readingBooks: number
+  unreadBooks: number
+  avgRating: number
 }
 
-// Calcula estatísticas
-const calculateStats = (books: Book[]) => {
-  const totalBooks = books.length
-  const booksRead = books.filter(b => b.read).length
-  const booksToRead = totalBooks - booksRead
-
-  const totalPages = books.reduce((sum, b) => sum + (b.pages || 0), 0)
-  const readPages = books.reduce((sum, b) => sum + (b.current_page || 0), 0)
-  const pagesPercentage = totalPages > 0 ? (readPages / totalPages) * 100 : 0
-
-  return {
-    totalBooks,
-    booksRead,
-    booksToRead,
-    pagesPercentage,
-  }
-}
-
-export default function StatsCards({ books, theme = {} }: StatsCardsProps) {
-  const { totalBooks, booksRead, booksToRead, pagesPercentage } =
-    calculateStats(books)
-
-  const defaultTheme = {
-    card: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md',
-    textPrimary: 'text-gray-900 dark:text-gray-100',
-    textSecondary: 'text-gray-500 dark:text-gray-400',
-    gaugeColor: '#4f46e5',
-  }
-
-  const appliedTheme = { ...defaultTheme, ...theme }
-
+export default function StatsCards({
+  totalBooks,
+  readBooks,
+  readingBooks,
+  unreadBooks,
+  avgRating,
+}: StatsCardsProps) {
   const stats = [
     {
       title: 'Total de Livros',
       value: totalBooks,
-      icon: BookOpen,
-      description: `${booksToRead} para ler.`,
+      icon: Book,
+      color: 'bg-primary dark:bg-primary/80',
     },
     {
-      title: 'Livros Lendo',
-      value: booksToRead,
-      icon: BookOpenCheck,
-      description: 'Ainda em progresso...',
-    },
-    {
-      title: 'Livros Lidos',
-      value: booksRead,
+      title: 'Lidos',
+      value: readBooks,
       icon: CheckCircle,
-      description:
-        totalBooks > 0
-          ? `${Math.round((booksRead / totalBooks) * 100)}% da sua coleção.`
-          : '0%',
+      color: 'bg-green-500 dark:bg-green-400',
     },
     {
-      title: 'Páginas Lidas',
-      value: `${Math.round(pagesPercentage)}%`,
-      icon: BarChart2, // ícone representando progresso
-      description: 'Progresso total das páginas lidas.',
+      title: 'Lendo',
+      value: readingBooks,
+      icon: BookOpen,
+      color: 'bg-yellow-400 dark:bg-yellow-300',
+    },
+    {
+      title: 'Não lidos',
+      value: unreadBooks,
+      icon: Bookmark,
+      color: 'bg-gray-400 dark:bg-gray-500',
+    },
+    {
+      title: 'Média Rating',
+      value: avgRating,
+      icon: Star,
+      color: 'bg-purple-500 dark:bg-purple-400',
     },
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
-        <Card
-          key={index}
-          className={`${appliedTheme.card} flex flex-col items-center justify-center p-4 min-h-[180px]`}
-        >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 w-full">
-            <CardTitle
-              className={`${appliedTheme.textPrimary} text-sm font-medium`}
-            >
-              {stat.title}
-            </CardTitle>
-            {stat.icon && (
-              <stat.icon className={`${appliedTheme.textSecondary} h-4 w-4`} />
-            )}
-          </CardHeader>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6 xl:gap-8">
+      {stats.map(stat => {
+        const Icon = stat.icon
+        const progress = totalBooks > 0 ? stat.value / totalBooks : 0
 
-          <CardContent className="flex flex-col items-center justify-center w-full">
-            <div className={`${appliedTheme.textPrimary} text-2xl font-bold`}>
-              {stat.value}
-            </div>
+        return (
+          <Card
+            key={stat.title}
+            className="
+              flex flex-col justify-between rounded-lg
+              shadow-sm hover:shadow-md transition-all
+              p-4 lg:p-6
+              min-h-[160px] sm:min-h-[150px] md:min-h-[140px] lg:min-h-[160px] xl:min-h-[180px]
+            "
+          >
+            <CardHeader className="flex items-center justify-between p-0 mb-3">
+              <CardTitle className="text-sm font-semibold text-foreground">
+                {stat.title}
+              </CardTitle>
+              <Icon className="w-5 h-5 text-foreground/70" />
+            </CardHeader>
 
-            <p
-              className={`${appliedTheme.textSecondary} text-xs text-center mt-2`}
-            >
-              {stat.description}
-            </p>
-          </CardContent>
-        </Card>
-      ))}
+            <CardContent className="flex flex-col justify-between p-0 h-full">
+              <p className="text-2xl sm:text-2xl md:text-xl lg:text-xl font-bold text-foreground">
+                {stat.value}
+              </p>
+              <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded mt-3 overflow-hidden">
+                <div
+                  className={`${stat.color} h-full rounded transition-all duration-500`}
+                  style={{ width: `${Math.min(progress * 100, 100)}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }

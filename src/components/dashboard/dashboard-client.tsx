@@ -1,20 +1,24 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
-import { useEffect, useState, useTransition } from 'react'
-import { toast } from 'sonner'
-
-import { BookType, deleteBook, getDashboardBooks } from '@/app/actions/book'
+import { BookType } from '@/app/actions/book'
 import BookCard from '@/components/book/book-card'
 import DatabaseWave from '@/components/dashboard/database-wave'
 import StatsCards from '@/components/dashboard/stats-cards'
 import GenreFilter from '@/components/library/genre-filter'
-import LoadingSpinner from '@/components/loading/loading-spinner'
-import { Card } from '@/components/ui/card'
 import { AVAILABLE_GENRES } from '@/lib/validation'
+import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 
-export default function DashboardPage() {
-  const [books, setBooks] = useState<BookType[] | null>(null)
+interface DashboardClientProps {
+  initialBooks: BookType[]
+  onDelete: (id: string) => Promise<{ success: boolean }>
+}
+
+export default function DashboardClient({
+  initialBooks,
+  onDelete,
+}: DashboardClientProps) {
+  const [books, setBooks] = useState(initialBooks)
   const [filterStatus, setFilterStatus] = useState<
     'ALL' | 'READING' | 'FINISHED' | 'UNREAD'
   >('ALL')
@@ -26,22 +30,21 @@ export default function DashboardPage() {
 
   const GENRES_WITH_ALL = ['Todos os gêneros', ...AVAILABLE_GENRES]
 
-  // Fetch dos livros do dashboard
-  const fetchBooks = async () => {
-    try {
-      const data = await getDashboardBooks()
-      setBooks(data)
-    } catch (err: any) {
-      console.error(err)
-      toast.error('Erro ao carregar livros.', { description: err.message })
-    }
+  // Handler de deleção
+  const handleDeleteBook = async (id: string) => {
+    if (!confirm('Deseja realmente deletar este livro?')) return
+    startTransition(async () => {
+      try {
+        const result = await onDelete(id)
+        if (result.success) {
+          setBooks(prev => prev.filter(b => b.id !== id))
+          toast.success('Livro deletado!')
+        }
+      } catch (err: any) {
+        toast.error('Erro ao deletar livro', { description: err.message })
+      }
+    })
   }
-
-  useEffect(() => {
-    startTransition(() => fetchBooks())
-  }, [])
-
-  if (!books) return <LoadingSpinner message="Carregando Dashboard..." />
 
   // Filtra e ordena
   const filteredBooks = books
@@ -75,29 +78,14 @@ export default function DashboardPage() {
       )
     : 0
 
-  // Handler de deleção
-  const handleDeleteBook = async (id: string) => {
-    if (!confirm('Deseja realmente deletar este livro?')) return
-    startTransition(async () => {
-      try {
-        await deleteBook(id)
-        setBooks(prev => prev!.filter(b => b.id !== id))
-        toast.success('Livro deletado!')
-      } catch (err: any) {
-        console.error(err)
-        toast.error('Erro ao deletar livro', { description: err.message })
-      }
-    })
-  }
-
   // Últimos livros atualizados
   const latestBooks = [...books]
     .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     .slice(0, 5)
 
   return (
-    <div className="p-6 md:p-10 space-y-8 min-h-screen bg-[var(--color-background)] text-[var(--color-foreground)] transition-colors duration-300">
-      {/* Header e filtros */}
+    <>
+      {/* Header e Filtros */}
       <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold">Dashboard Bookshelf</h1>
         <div className="flex gap-4 flex-wrap items-center">
@@ -150,49 +138,17 @@ export default function DashboardPage() {
         <DatabaseWave progress={progressData} />
       </section>
 
-      {/* Últimos livros */}
+      {/* Últimos livros atualizados */}
       <section className="space-y-2">
         <h2 className="text-2xl font-semibold mb-2">
           Últimos Livros Atualizados
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {latestBooks.map(book => (
-            <Card
-              key={book.id}
-              className="p-4 flex justify-between items-center hover:shadow-md transition-shadow"
-            >
-              <div>
-                <h3 className="font-semibold">{book.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {book.author} • {book.readingStatus} • {book.currentPage}/
-                  {book.totalPages} páginas
-                </p>
-              </div>
-              <button
-                onClick={() => handleDeleteBook(book.id)}
-                className="text-red-500 hover:text-red-700"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </Card>
+            <BookCard key={book.id} book={book} onDelete={handleDeleteBook} />
           ))}
         </div>
       </section>
-
-      {/* Grid de todos os livros */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold mb-2">Todos os Livros</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredBooks.map(book => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onDelete={handleDeleteBook}
-              showTooltip
-            />
-          ))}
-        </div>
-      </section>
-    </div>
+    </>
   )
 }

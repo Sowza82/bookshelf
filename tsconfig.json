@@ -17,7 +17,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    // 🔑 CORREÇÃO CRÍTICA: Permite importar arquivos .ts com a extensão
     "allowImportingTsExtensions": true,
     "plugins": [
       {

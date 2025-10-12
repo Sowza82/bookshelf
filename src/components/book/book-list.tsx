@@ -8,16 +8,14 @@ import BookCard from './book-card'
 
 // MOCK: Toast simples (substitua pelo useToast real do Shadcn/UI)
 const useToast = () => ({
-  toast: ({ title, description }: { title: string; description: string }) => {
-    console.log(`[TOAST] ${title}: ${description}`)
-  },
+  toast: ({ title, description }: { title: string; description: string }) =>
+    console.log(`[TOAST] ${title}: ${description}`),
 })
 
-// 🔑 Props corretas incluindo os handlers
 interface BookListProps {
   books: Book[]
-  onEdit: (bookId: string) => void
-  onView: (bookId: string) => void
+  onEdit: (id: string) => void
+  onView: (id: string) => void
 }
 
 export default function BookList({ books, onEdit, onView }: BookListProps) {
@@ -26,21 +24,18 @@ export default function BookList({ books, onEdit, onView }: BookListProps) {
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Handler para abrir modal de exclusão
+  // Abrir modal de exclusão
   const handleDelete = (bookId: string) => {
     const book = books.find(b => b.id === bookId)
     if (book) setBookToDelete(book)
   }
 
-  // Confirma exclusão
+  // Confirmar exclusão
   const confirmDelete = async () => {
     if (!bookToDelete) return
     setIsDeleting(true)
-
     try {
-      // Aqui você faria a chamada real da API
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
+      await new Promise(resolve => setTimeout(resolve, 1500)) // Simula API
       toast({
         title: 'Livro removido',
         description: `O livro "${bookToDelete.title}" foi deletado com sucesso.`,
@@ -57,20 +52,19 @@ export default function BookList({ books, onEdit, onView }: BookListProps) {
     }
   }
 
-  // Atualiza status de leitura
-  const handleStatusChange = async (bookId: string, newStatus: boolean) => {
+  // Alterar status de leitura
+  const handleStatusChange = async (bookId: string, checked: boolean) => {
     const book = books.find(b => b.id === bookId)
     if (!book) return
-
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 500)) // Simula API
       toast({
         title: 'Status atualizado',
         description: `O livro "${book.title}" agora está ${
-          newStatus ? 'LIDO' : 'NÃO LIDO'
+          checked ? 'LIDO' : 'NÃO LIDO'
         }.`,
       })
-    } catch (err) {
+    } catch {
       toast({
         title: 'Erro',
         description: 'Não foi possível atualizar o status do livro.',
@@ -88,16 +82,8 @@ export default function BookList({ books, onEdit, onView }: BookListProps) {
 
   return (
     <>
-      <div
-        className="
-          grid
-          grid-cols-2
-          sm:grid-cols-3
-          lg:grid-cols-4
-          xl:grid-cols-5
-          gap-6 mt-2
-        "
-      >
+      {/* GRID DE CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2">
         {books.map(book => (
           <BookCard
             key={book.id}
@@ -105,14 +91,14 @@ export default function BookList({ books, onEdit, onView }: BookListProps) {
             onView={() => onView(book.id)}
             onEdit={() => onEdit(book.id)}
             onDelete={() => handleDelete(book.id)}
-            onStatusChange={(newStatus: boolean) =>
-              handleStatusChange(book.id, newStatus)
+            onStatusChange={(checked: boolean) =>
+              handleStatusChange(book.id, checked)
             }
           />
         ))}
       </div>
 
-      {/* Modal de exclusão */}
+      {/* MODAL DE EXCLUSÃO */}
       {bookToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-6 transform transition-all duration-300 scale-100">

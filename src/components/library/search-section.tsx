@@ -1,23 +1,25 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-// Assumindo que você tem estes componentes de UI
-import BookCard from '../book/BookCard'
-import LoadingSpinner from '../loading/LoadingSpinner'
+import { BookType, deleteBook, getBooks } from '@/app/actions/book'
+import { AVAILABLE_GENRES } from '@/lib/constants'
+import { useCallback, useEffect, useState, useTransition } from 'react'
+import BookCard from '../book/book-card'
+import LoadingSpinner from '../loading/loading-spinner'
 import { Card } from '../ui/card'
-import GenreFilter from './GenreFilter'
-import SearchInput from './SearchInput'
+import { Separator } from '../ui/separator'
+import GenreFilter from './genre-filter'
+import SearchInput from './search-input'
 
-// Importando a Server Action e o tipo BookType
-import { BookType, getBooks } from '@/app/actions/book'
+// Placeholder para toast
+export const toast = {
+  success: (msg: string) => alert(`✅ ${msg}`),
+  error: (msg: string) => alert(`❌ ${msg}`),
+}
 
-// O tipo BookType é usado para definir o estado (BookType é o tipo Prisma.Book)
 type Book = BookType
+const GENRES_WITH_ALL = ['Todos os gêneros', ...AVAILABLE_GENRES]
 
-// 🚀 Fetcher Real que chama a Server Action
-// Esta função é o que realmente comunica com o servidor via Server Action
 const fetcher = async (query: string, genre: string): Promise<Book[]> => {
-  // A chamada à Server Action é transparente para o Cliente Componente
   return getBooks(query, genre)
 }
 
@@ -25,16 +27,18 @@ export default function SearchSection() {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [genreFilter, setGenreFilter] = useState('Todos os gêneros')
+  const [genreFilter, setGenreFilter] = useState(GENRES_WITH_ALL[0])
+  const [isDeleting, startDeleteTransition] = useTransition()
 
   const fetchBooks = useCallback(async () => {
     setLoading(true)
     try {
-      // 🚀 Chama o fetcher REAL (que agora usa getBooks com Prisma)
-      const data = await fetcher(searchQuery, genreFilter)
+      const genreParam = genreFilter === 'Todos os gêneros' ? '' : genreFilter
+      const data = await fetcher(searchQuery, genreParam)
       setBooks(data)
     } catch (error) {
       console.error('Erro ao carregar livros:', error)
+      toast.error('Não foi possível carregar os livros.')
       setBooks([])
     } finally {
       setLoading(false)
@@ -42,43 +46,62 @@ export default function SearchSection() {
   }, [searchQuery, genreFilter])
 
   useEffect(() => {
-    // Adiciona um pequeno atraso (debounce) para otimizar o desempenho
-    // e evitar chamadas desnecessárias à Server Action (getBooks)
     const handler = setTimeout(() => {
       fetchBooks()
-    }, 300) // 300ms de debounce
-
+    }, 300)
     return () => clearTimeout(handler)
   }, [fetchBooks])
+
+  const handleDeleteBook = (id: string) => {
+    if (
+      !confirm(
+        'Tem certeza que deseja deletar este livro? Esta ação é irreversível.'
+      )
+    )
+      return
+
+    startDeleteTransition(async () => {
+      try {
+        await deleteBook(id)
+        setBooks(prev => prev.filter(book => book.id !== id))
+        toast.success('Livro removido com sucesso!')
+      } catch (error: any) {
+        console.error('Erro ao deletar livro:', error)
+        toast.error('Erro ao deletar livro.', {
+          description: error.message || 'Tente novamente.',
+        })
+      }
+    })
+  }
 
   if (loading) return <LoadingSpinner message="Carregando biblioteca..." />
 
   return (
     <div className="space-y-6">
-      {/* Barra de Pesquisa e Filtros */}
-      <Card className="p-4 shadow-sm bg-[var(--color-card)] transition-colors duration-300">
+      <Card className="p-4 shadow-sm bg-background transition-colors duration-300">
         <div className="flex flex-col sm:flex-row gap-4 items-center">
-          {/* Campo de Busca */}
           <div className="flex-grow w-full sm:w-auto">
             <SearchInput initialQuery={searchQuery} onChange={setSearchQuery} />
           </div>
-
-          {/* Filtro de Gênero */}
           <div className="w-full sm:w-64">
-            <GenreFilter initialGenre={genreFilter} onChange={setGenreFilter} />
+            <GenreFilter
+              initialGenre={genreFilter}
+              onChange={setGenreFilter}
+              genres={GENRES_WITH_ALL}
+            />
           </div>
         </div>
       </Card>
 
-      {/* Contagem e Limpar Filtros */}
+      <Separator />
+
       <p className="text-sm text-muted-foreground">
         {books.length} livro(s) encontrado(s).
-        {(searchQuery || genreFilter !== 'Todos os gêneros') && (
+        {(searchQuery || genreFilter !== GENRES_WITH_ALL[0]) && (
           <button
             onClick={() => {
-              // Limpa os filtros e o useEffect dispara um novo fetch
               setSearchQuery('')
-              setGenreFilter('Todos os gêneros')
+              setGenreFilter(GENRES_WITH_ALL[0])
             }}
             className="text-primary hover:underline ml-2"
           >
@@ -87,11 +110,15 @@ export default function SearchSection() {
         )}
       </p>
 
-      {/* Grid de livros */}
       {books.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {books.map(book => (
-            <BookCard key={book.id} book={book} />
+            <BookCard
+              key={book.id}
+              book={book}
+              onDelete={handleDeleteBook}
+              isDeleting={isDeleting}
+            />
           ))}
         </div>
       ) : (

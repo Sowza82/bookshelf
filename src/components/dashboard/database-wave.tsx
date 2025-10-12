@@ -1,56 +1,36 @@
 'use client'
 
-import { useEffect } from 'react'
-import Wavify from 'react-wavify'
+import { useEffect, useState } from 'react'
 
-type Props = {
-  progress: number
+interface DatabaseWaveProps {
+  progress: number // 0 a 100
 }
 
-export default function DatabaseWave({ progress }: Props) {
-  // CORREÇÃO: Usamos uma diretiva de disable específica na linha para garantir que o linter pare de reclamar.
-  // Isso é mais limpo do que manter a variável desnecessária se ela está comentada no useEffect.
-  // Se você realmente precisar dela, mantenha `const _play = () => {}`
-  // Se não precisar, você pode apagar a linha, ou usar o disable abaixo.
-
-  // Opção 1: Manter a linha e desativar o linter (se a renomeação para '_play' não funcionou):
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _play = () => {}
+export default function DatabaseWave({ progress }: DatabaseWaveProps) {
+  const [width, setWidth] = useState(0)
 
   useEffect(() => {
-    if (progress > 0) {
-      // _play() // som desativado
-    }
+    const timeout = setTimeout(() => setWidth(progress), 100)
+    return () => clearTimeout(timeout)
   }, [progress])
 
-  // Calcula bottom para nunca sumir
-  const waveBottom = Math.max(progress - 100, -80)
+  // Cor dinâmica
+  const color =
+    progress >= 80
+      ? 'bg-green-500'
+      : progress >= 50
+      ? 'bg-yellow-400'
+      : 'bg-red-500'
 
   return (
-    <div className="relative w-full h-40 rounded-lg overflow-hidden bg-[var(--color-card)] shadow-md">
-      {/* Porcentagem central */}
-      <div className="absolute inset-0 flex items-center justify-center z-10 text-2xl font-bold text-[var(--color-card-foreground)]">
+    <div className="relative w-full h-6 bg-gray-200 rounded overflow-hidden shadow-inner">
+      <div
+        className={`${color} h-full rounded transition-all duration-700`}
+        style={{ width: `${width}%` }}
+      ></div>
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-medium text-white">
         {progress}%
-      </div>
-
-      {/* Onda animada */}
-      <Wavify
-        fill="var(--color-primary)"
-        paused={false}
-        options={{
-          height: 20,
-          amplitude: 30,
-          speed: 0.25,
-          points: 3,
-        }}
-        style={{
-          position: 'absolute',
-          bottom: `${waveBottom}%`,
-          width: '100%',
-          height: '100%',
-          transition: 'bottom 0.5s ease-in-out',
-        }}
-      />
+      </span>
     </div>
   )
 }

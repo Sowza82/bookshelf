@@ -1,18 +1,22 @@
+// src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client'
 
-// Adiciona prisma ao objeto global para evitar criar múltiplas instâncias
-// durante o desenvolvimento (Hot Reloading)
+// Evita múltiplas instâncias do PrismaClient durante o desenvolvimento (Hot Reload)
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
+  prisma?: PrismaClient
 }
 
-// Exporta a instância única do PrismaClient
+// Cria (ou reutiliza) a instância do PrismaClient
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    // Opcional: Ativa o log de queries para debug no console
-    log: ['query', 'info', 'warn', 'error'],
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'info', 'warn', 'error'] // logs detalhados em dev
+        : ['error'], // apenas erros em produção
   })
 
-// Em ambiente de desenvolvimento, anexa a instância ao globalThis
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Em ambiente de desenvolvimento, mantém a instância no escopo global
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
+}

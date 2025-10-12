@@ -1,38 +1,28 @@
 // src/hooks/useLocalStorage.ts
+import { useEffect, useState } from 'react'
 
-import { useState, useEffect } from 'react'
-
-export default function useLocalStorage<T>(key: string, initialValue: T) {
-
-  // 1. Inicialização do estado a partir do LocalStorage (executa apenas uma vez)
+export default function useLocalStorage<T>(key: string, initialValue: T | (() => T)) {
   const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue
-    }
+    if (typeof window === 'undefined') return typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
     try {
       const item = window.localStorage.getItem(key)
-      // Se houver valor, retorna o JSON parseado. Caso contrário, retorna o valor inicial.
-      return item ? JSON.parse(item) : initialValue
+      if (item) return JSON.parse(item) as T
+      return typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
     } catch (error) {
-      console.error('Erro ao carregar localStorage:', error)
-      return initialValue
+      console.error('Erro ao ler localStorage:', error)
+      return typeof initialValue === 'function' ? (initialValue as () => T)() : initialValue
     }
   })
 
-  // 2. Efeito para salvar o estado no LocalStorage sempre que 'storedValue' mudar
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        // O valor salvo é o estado atual
-        const valueToStore = JSON.stringify(storedValue)
-        window.localStorage.setItem(key, valueToStore)
-        // console.log(`[STORAGE] Dados salvos para a chave: ${key}`); // Linha de debug opcional
+        window.localStorage.setItem(key, JSON.stringify(storedValue))
       } catch (error) {
         console.error('Erro ao salvar localStorage:', error)
       }
     }
-  }, [key, storedValue]) // Dependência: 'storedValue' é o que dispara o salvamento
+  }, [key, storedValue])
 
-  // Retorna o valor e a função para atualizá-lo (que aciona o useEffect acima)
   return [storedValue, setStoredValue] as const
 }
